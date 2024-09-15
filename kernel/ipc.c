@@ -35,6 +35,10 @@ int ipc_recv(endpoint_t ep, message_t __user *msg) {
 	this_proc()->recv_from = src;
 	sleep(&this_proc()->msg);
 
+	if (this_proc()->recv_from != src) {
+		return IPC_ERROR;
+	}
+
 	if (copyout(&this_proc()->msg, msg, sizeof(message_t)) < 0) {
 		return IPC_ERROR;
 	}
