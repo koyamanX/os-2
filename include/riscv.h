@@ -12,6 +12,8 @@ typedef short s16;
 typedef unsigned char u8;
 typedef signed char s8;
 
+#define __user
+
 #define MSTATUS_MPP_MASK (0x3 << 11)
 #define MSTATUS_MPP_M_MODE (0x3 << 11)
 #define MSTATUS_MPP_S_MODE (0x1 << 11)

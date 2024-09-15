@@ -25,6 +25,7 @@ void initcpu(void) {
 void initproc(void) {
     for (int i = 0; i < NPROCS; i++) {
         procs[i].stat = UNUSED;
+		procs[i].recv_from = -1;
     }
 }
 
@@ -99,7 +100,8 @@ void sleep(void *wchan) {
     struct proc *rp = this_proc();
 
     rp->wchan = wchan;
-    rp->stat = SLEEP;
+	if(rp->stat == RUNNABLE)
+		rp->stat = SLEEP;
 
     sched();
 
@@ -108,9 +110,18 @@ void sleep(void *wchan) {
 
 void wakeup(void *wchan) {
     for (struct proc *rp = &procs[0]; rp < &procs[NPROCS]; rp++) {
-        if (rp->wchan == wchan && rp->stat == SLEEP) {
+        if (rp->wchan == wchan && (rp->stat == SLEEP || rp->stat == RECEIVE)) {
             rp->stat = RUNNABLE;
             rp->wchan = NULL;
         }
     }
+}
+
+struct proc *find_proc(u64 pid) {
+	for (struct proc *rp = &procs[0]; rp < &procs[NPROCS]; rp++) {
+		if (rp->pid == pid) {
+			return rp;
+		}
+	}
+	return NULL;
 }

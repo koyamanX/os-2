@@ -9,6 +9,7 @@
 #include <uart.h>
 #include <unistd.h>
 #include <vm.h>
+#include <ipc.h>
 
 // TODO:
 int mknod(const char *pathname, mode_t mode, dev_t dev);
@@ -91,6 +92,14 @@ u64 syscall(struct proc *rp) {
             ret = waitpid(a0, (void *)va2pa(rp->pgtbl, a1), a2);
             rp->tf->a0 = ret;
             break;
+		case __NR_IPC_SEND:
+			ret = ipc_send((endpoint_t)a0, (message_t*)a1);
+			rp->tf->a0 = ret;
+			break;
+		case __NR_IPC_RECV:
+			ret = ipc_recv((endpoint_t)a0, (message_t*)a1);
+			rp->tf->a0 = ret;
+			break;
         default:
             panic("invalid syscall\n");
             break;

@@ -35,3 +35,28 @@ mknod:
 	li a7, 4
 	ecall
 	ret
+
+.globl ipc_send
+ipc_send:
+	li a7, 17
+	ecall
+	ret
+
+.globl ipc_recv
+ipc_recv:
+	li a7, 18
+	ecall
+	ret
+
+.globl fork
+fork:
+	li a7, 7
+	ecall
+	ret
+
+.globl execve
+execve:
+	li a7, 1
+	ecall
+	ret
+

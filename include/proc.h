@@ -9,6 +9,7 @@
 
 #include <file.h>
 #include <riscv.h>
+#include <ipc.h>
 
 /**
  * @brief Struct for trapframe.
@@ -94,6 +95,8 @@ struct proc {
     u8 *kstack;                  //!< Pointer to per-process kernel stack.
     void *wchan;                 //!< Waiting channel.
     u64 ppid;                    //!< Parent process.
+	message_t msg;
+	endpoint_t recv_from;
 };
 
 #define UNUSED 0    //!< Proc struct is unused.
@@ -102,6 +105,8 @@ struct proc {
 #define RUNNABLE 3  //!< Proc is runnable.
 #define ZOMBIE 4    //!< Proc is zombie.
 #define SLEEP 5     //!< Proc is sleeping.
+#define RECEIVE 6   //!< Proc is receiving.
+#define SENDING 7   //!< Proc is sending.
 
 /**
  * @brief Struct for Processors.
@@ -184,5 +189,7 @@ void wakeup(void *wchan);
  * @param[in] new new context.
  */
 extern void swtch(context_t *old, context_t *new);
+
+struct proc *find_proc(u64 pid);
 
 #endif  // _PROC_H
