@@ -192,4 +192,8 @@ extern void swtch(context_t *old, context_t *new);
 
 struct proc *find_proc(u64 pid);
 
+struct proc *procmgr(void);
+
+#define PROCMGR 0
+
 #endif  // _PROC_H

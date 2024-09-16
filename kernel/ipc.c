@@ -13,7 +13,7 @@ int ipc_send(endpoint_t ep, message_t __user *msg) {
 		return IPC_INVALID_ENDPOINT;
 	}
 
-	if (dest_p->stat == RECEIVE && (dest_p->recv_from == src)) {
+	if (dest_p->stat == RECEIVE && ((dest_p->recv_from == src) || (dest_p->recv_from == IPC_ANY))) {
 		if (copyin(msg, &dest_p->msg, sizeof(message_t)) < 0) {
 			return IPC_ERROR;
 		}
@@ -35,10 +35,11 @@ int ipc_recv(endpoint_t ep, message_t __user *msg) {
 	this_proc()->recv_from = src;
 	sleep(&this_proc()->msg);
 
-	if (this_proc()->recv_from != src) {
+	if (this_proc()->recv_from != src && this_proc()->recv_from != IPC_ANY) {
 		return IPC_ERROR;
 	}
 
+	this_proc()->recv_from = IPC_INVALID_ENDPOINT;
 	if (copyout(&this_proc()->msg, msg, sizeof(message_t)) < 0) {
 		return IPC_ERROR;
 	}

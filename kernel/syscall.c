@@ -33,14 +33,17 @@ u64 syscall(struct proc *rp) {
             ret = open(((const char *)va2pa(rp->pgtbl, a0)), a1, a2);
             rp->tf->a0 = ret;
             break;
+	/*
         case __NR_MKDIR:
             ret = mkdir(((const char *)va2pa(rp->pgtbl, a0)), a1);
             rp->tf->a0 = ret;
             break;
+	*/
         case __NR_MKNOD:
             ret = mknod(((const char *)va2pa(rp->pgtbl, a0)), a1, a2);
             rp->tf->a0 = ret;
             break;
+	/*
         case __NR_DUP:
             ret = dup((int)a0);
             rp->tf->a0 = ret;
@@ -49,6 +52,7 @@ u64 syscall(struct proc *rp) {
             ret = read(a0, (void *)va2pa(rp->pgtbl, a1), a2);
             rp->tf->a0 = ret;
             break;
+	*/
         case __NR_FORK:
             ret = fork();
             rp->tf->a0 = ret;
@@ -58,6 +62,7 @@ u64 syscall(struct proc *rp) {
             extern void swtch(context_t * old, context_t * new);
             swtch(&rp->ctx, &this_cpu().ctx);
             break;
+	/*
         case __NR_CLOSE:
             ret = close(a0);
             rp->tf->a0 = ret;
@@ -92,6 +97,7 @@ u64 syscall(struct proc *rp) {
             ret = waitpid(a0, (void *)va2pa(rp->pgtbl, a1), a2);
             rp->tf->a0 = ret;
             break;
+	*/
 		case __NR_IPC_SEND:
 			ret = ipc_send((endpoint_t)a0, (message_t*)a1);
 			rp->tf->a0 = ret;

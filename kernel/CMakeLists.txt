@@ -25,6 +25,7 @@ set(KERNEL_SOURCE
 	timer.S
 	swtch.S)
 
+add_subdirectory(servers)
 add_subdirectory(sys)
 add_subdirectory(lib)
 
@@ -40,3 +41,4 @@ target_link_libraries(kernel sys lib)
 target_link_options(kernel PRIVATE LINKER:-T ${KERNEL_LINKER_SCRIPT})
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/kernel DESTINATION ${CMAKE_INSTALL_PREFIX})
+

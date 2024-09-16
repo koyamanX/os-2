@@ -12,3 +12,4 @@ target_include_directories(ipc_echo
 	PUBLIC ${PROJECT_SOURCE_DIR}/include)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/ipc_echo" DESTINATION "${CMAKE_INSTALL_PREFIX}/usr/sbin/")
 
+

@@ -113,3 +113,8 @@ kernelvec:
 
 	sret
 
+.section .rodata
+.align 3
+.globl _procmgr
+_procmgr:
+.incbin "servers/procmgr"	

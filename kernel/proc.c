@@ -16,6 +16,7 @@
 struct proc procs[NPROCS];
 struct cpu cpu;
 extern void init(void);
+extern char _procmgr;
 
 void initcpu(void) {
     cpu.rp = NULL;
@@ -47,14 +48,13 @@ void userinit(void) {
     kvmdump(p->pgtbl, 4096);
 }
 
-static u64 mpid = 1;
-struct proc *newproc(void) {
+static struct proc *_newproc(int pid) {
     struct proc *p;
 
     for (p = &procs[0]; p < &procs[NPROCS]; p++) {
         if (p->stat == UNUSED) {
             p->stat = USED;
-            p->pid = mpid++;
+            p->pid = pid;
             goto found;
         }
     }
@@ -94,6 +94,60 @@ found:
     p->heap = 0x20000000;
 
     return p;
+}
+static u64 mpid = 1;
+struct proc *newproc(void) {
+	return _newproc(mpid++);
+}
+
+static void load_embed_elf(struct proc *p, const char *elf) {
+	Elf64_Ehdr *ehdr = (Elf64_Ehdr *)elf;
+
+	if(!IS_RISCV_ELF(*ehdr))
+		panic("not riscv elf");
+
+	Elf64_Phdr *phdr = (Elf64_Phdr *)(elf + ehdr->e_phoff);
+
+    u64 prot = PTE_V | PTE_U;
+	for (int i = 0; i < ehdr->e_phnum; i++) {
+		u64 off = phdr[i].p_offset;
+
+		if(phdr[i].p_type != PT_LOAD)
+			continue;
+
+		if (phdr[i].p_flags & PF_X) {
+			prot |= PTE_X;
+		}
+		if (phdr[i].p_flags & PF_R) {
+			prot |= PTE_R;
+		}
+		if (phdr[i].p_flags & PF_W) {
+			prot |= PTE_W;
+		}
+
+		for (u64 va = phdr[i].p_vaddr; va < phdr[i].p_vaddr + phdr[i].p_memsz; va += PAGE_SIZE) {
+			char *page = (char *)va2pa(p->pgtbl, va);
+			if (page == NULL) {
+				page = alloc_page();
+				kvmmap(p->pgtbl, va, (u64)page, PAGE_SIZE, prot);
+				printk("kvmmap: va: %x, pa: %x, prot: %x\n", va, (u64)page, prot);
+			}
+			memcpy(page, elf + off, PAGE_SIZE);
+		}
+	}
+	p->tf->sepc = ehdr->e_entry;
+}
+
+struct proc *procmgr(void) {
+	struct proc *p = _newproc(PROCMGR);
+	if (!p) {
+		panic("procmgr: no procs");
+	}
+	p->ppid = 0;
+	strcpy(p->name, "procmgr");
+	load_embed_elf(p, &_procmgr);
+
+	return p;
 }
 
 void sleep(void *wchan) {

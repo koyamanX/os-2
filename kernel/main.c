@@ -82,8 +82,10 @@ void kmain(void) {
     binit();
     // Initialize File system.
     fsinit();
+	// Initialize process manager.
+	procmgr();
     // Initialize first user process named init.
-    userinit();
+    //userinit();
     // Enter scheduler, never returns.
     scheduler();
 }

@@ -3,6 +3,8 @@
 
 #include <riscv.h>
 
+#define IPC_ANY 0
+
 typedef struct message {
 	u64 mtype;
 	u8 mdata[128];
