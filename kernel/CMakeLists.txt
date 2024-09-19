@@ -1,6 +1,4 @@
 set(KERNEL_SOURCE
-	bio.c
-	fs.c
 	main.c
 	panic.c
 	printk.c
@@ -9,13 +7,10 @@ set(KERNEL_SOURCE
 	timer.c
 	trap.c
 	uart.c
-	virtio.c
 	vm.c
 	init.S
 	start.S
 	syscall.c
-	devsw.c
-	fio.c
 	alloc.c
 	kmalloc.c
 	sleeplock.c
