@@ -74,18 +74,10 @@ void kmain(void) {
     initcpu();
     // Initialize proc struct.
     initproc();
-    // Initialize Virtio-blk.
-    virtio_init();
     // Initialize PLIC.
     plic_init();
-    // Initialize buffered cache.
-    binit();
-    // Initialize File system.
-    fsinit();
 	// Initialize process manager.
 	procmgr();
-    // Initialize first user process named init.
-    //userinit();
     // Enter scheduler, never returns.
     scheduler();
 }

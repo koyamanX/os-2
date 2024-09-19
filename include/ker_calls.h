@@ -1,0 +1,24 @@
+#ifndef _KER_CALLS_H
+#define _KER_CALLS_H
+
+enum {
+	VM_MAP = 0,
+	VM_UNMAP,
+	TASK_CREATE,
+	TASK_EXIT,
+	TASK_DESTROY,
+	TASK_SCHEDULE,
+	IPC_SEND,
+	IPC_RECEIVE,
+	IPC_REPLY,
+	IPC_NOTIFY,
+	IRQ_AQUIRE,
+	IRQ_RELEASE,
+};
+
+enum {
+	K_SUCCESS = 0,
+	K_FAILURE,
+};
+
+#endif // _KER_CALLS_H

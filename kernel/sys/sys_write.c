@@ -2,9 +2,10 @@
 #include <fs.h>
 #include <panic.h>
 #include <proc.h>
+#include <uart.h>
 
 ssize_t write(int fd, const void *buf, size_t count) {
-    u64 ret = -1;
+	/*
     struct proc *rp;
     struct file *fp;
 
@@ -15,6 +16,11 @@ ssize_t write(int fd, const void *buf, size_t count) {
     }
     ret = writei(fp->ip, (char *)buf, fp->offset, count);
     fp->offset += count;
+	*/
 
-    return ret;
+	for(int i = 0; i < count; i++) {
+		uart_putchar(((char *)buf)[i]);
+	}
+
+    return count;
 }

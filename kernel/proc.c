@@ -130,7 +130,6 @@ static void load_embed_elf(struct proc *p, const char *elf) {
 			if (page == NULL) {
 				page = alloc_page();
 				kvmmap(p->pgtbl, va, (u64)page, PAGE_SIZE, prot);
-				printk("kvmmap: va: %x, pa: %x, prot: %x\n", va, (u64)page, prot);
 			}
 			memcpy(page, elf + off, PAGE_SIZE);
 		}

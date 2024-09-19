@@ -11,13 +11,7 @@ int main(void) {
 	int stdin = open("/console", 0, 0);
 	int stdout = open("/console", 0, 0);
 
-	if(fork() == 0) {
-		execve("/usr/sbin/ipc_echo", NULL, NULL);
-	}
-	if(fork() == 0) {
-		execve("/usr/sbin/procmgr", NULL, NULL);
-	}
-
+	write(1, "I'm the init\n", 13);
 	message_t msg;
 
 	message_t msg1;
@@ -25,7 +19,7 @@ int main(void) {
 	for(int i = 0; i < 30; i++) {
 		msg1.mdata[i] = 'A' + i;
 	}
-	ipc_send(3, &msg1);
+	ipc_send(0, &msg1);
     while(1) {
 		ipc_recv(2, &msg);
 		write(stdout, (char *)msg.mdata, 30);
