@@ -1,5 +1,3 @@
-#include <fcntl.h>
-#include <fs.h>
 #include <panic.h>
 #include <proc.h>
 #include <uart.h>

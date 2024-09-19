@@ -12,8 +12,6 @@
 #include <ipc.h>
 #include <printk.h>
 
-// TODO:
-int mknod(const char *pathname, mode_t mode, dev_t dev);
 u64 syscall(struct proc *rp) {
     u64 syscall_num = rp->tf->a7;
     u64 a0 = rp->tf->a0;

@@ -1,5 +1,4 @@
 #include <elf.h>
-#include <fs.h>
 #include <kmalloc.h>
 #include <lib.h>
 #include <os1.h>
@@ -9,7 +8,6 @@
 #include <riscv.h>
 #include <sched.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <trap.h>
 #include <vm.h>
 

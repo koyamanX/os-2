@@ -4,8 +4,6 @@
  *	@author ckoyama(koyamanX)
  */
 #include <alloc.h>
-#include <buf.h>
-#include <fs.h>
 #include <lib.h>
 #include <os1.h>
 #include <plic.h>
@@ -16,7 +14,6 @@
 #include <sys/types.h>
 #include <timer.h>
 #include <uart.h>
-#include <virtio.h>
 #include <vm.h>
 
 /**

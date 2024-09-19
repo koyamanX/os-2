@@ -7,7 +7,6 @@
 #include <riscv.h>
 #include <sys/types.h>
 #include <uart.h>
-#include <virtio.h>
 #include <vm.h>
 
 void free_pages(void *p, int order) {
@@ -146,7 +145,7 @@ pagetable_t kvminit(void) {
     kvmmap(kpgtbl, (u64)&_etext, (u64)&_etext, (u64)PHYEND - (u64)&_etext,
            PTE_R | PTE_V | PTE_W);
     kvmmap(kpgtbl, UART_BASE, UART_BASE, PAGE_SIZE, PTE_W | PTE_R | PTE_V);
-    kvmmap(kpgtbl, VIRTIO_BASE, VIRTIO_BASE, PAGE_SIZE, PTE_W | PTE_R | PTE_V);
+//    kvmmap(kpgtbl, VIRTIO_BASE, VIRTIO_BASE, PAGE_SIZE, PTE_W | PTE_R | PTE_V);
 
     return kpgtbl;
 }

@@ -7,7 +7,6 @@
 #ifndef _PROC_H
 #define _PROC_H
 
-#include <file.h>
 #include <riscv.h>
 #include <ipc.h>
 
