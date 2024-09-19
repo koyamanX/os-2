@@ -1,5 +1,4 @@
 #include <elf.h>
-#include <kmalloc.h>
 #include <lib.h>
 #include <os1.h>
 #include <panic.h>

@@ -12,7 +12,6 @@ set(KERNEL_SOURCE
 	start.S
 	syscall.c
 	alloc.c
-	kmalloc.c
 	sleeplock.c
 	plic.c
 	ipc.c
