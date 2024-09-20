@@ -17,8 +17,6 @@ struct cpu cpu;
 extern void init(void);
 extern char _procmgr;
 
-list_t schedq;
-
 void initcpu(void) {
     cpu.rp = NULL;
     memset(&cpu.ctx, 0, sizeof(context_t));
@@ -31,7 +29,6 @@ void initproc(void) {
 		procs[i].kstack = kstacks[i];
 		procs[i].pgtbl = (pagetable_t)pgtbls[i];
     }
-	list_init(&schedq);
 }
 
 void userinit(void) {
@@ -65,7 +62,6 @@ static struct proc *_newproc(int pid) {
     return NULL;
 
 found:
-	list_push_back(&schedq, &p->next);
     // Initialize proc.
     p->stat = RUNNABLE;
     // Allocate memory for trapframe, page table, and kernel stack.
@@ -149,10 +145,6 @@ struct proc *procmgr(void) {
 	p->ppid = 0;
 	strcpy(p->name, "procmgr");
 	load_embed_elf(p, &_procmgr);
-
-	LIST_FOR_EACH(p, &schedq, struct proc, next) {
-		printk("pid: %d\n", p->pid);
-	}
 
 	return p;
 }
