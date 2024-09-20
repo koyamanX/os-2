@@ -24,27 +24,7 @@ void scheduler(void) {
 		this_proc() = NULL;
 		if(task->stat == RUNNING) {
 			task->stat = RUNNABLE;
-			enqueue(task);
 		}
-
-		/*
-		if (task) {
-        if (rp >= &procs[NPROCS]) {
-            rp = &procs[0];
-        }
-        if (rp->stat != RUNNABLE) {
-            rp++;
-            continue;
-        }
-        VERBOSE_PRINTK("scheduler: pid==%x\n", rp->pid);
-        this_proc() = rp;
-        rp->stat = RUNNING;
-        swtch(&this_cpu().ctx, &rp->ctx);
-        this_proc() = NULL;
-        if (rp->stat == RUNNING) {
-            rp->stat = RUNNABLE;
-        }
-        rp++;
-		*/
+		enqueue(task);
     }
 }
