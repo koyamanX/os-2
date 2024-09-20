@@ -17,6 +17,15 @@ list_t ready_queue;
 struct cpu cpu;
 extern char _procmgr;
 
+static void *alloc_page(void) {
+	static u64 freepage = ((u64)&_end) - PAGE_SIZE;
+
+	freepage = ROUNDUP(freepage) + PAGE_SIZE;
+	PANIC_ON(freepage >= (u64)PHYEND, "Out of memory");
+
+	return (void *)freepage;
+}
+
 void inittask(void) {
 	for (int i = 0; i < NTASKS; i++) {
 		tasks[i].stat = UNUSED;

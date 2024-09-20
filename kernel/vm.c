@@ -10,6 +10,7 @@
 #include <vm.h>
 #include <task.h>
 
+#define alloc_page() alloc_pages(MIN_ORDER)
 void free_pages(void *p, int order) {
     buddy_free(p, order);
 }
@@ -82,30 +83,6 @@ void kvmunmap(pagetable_t pgtbl, u64 va, u64 sz) {
         free_page((void *)pa);
         *pte = 0;
     }
-}
-
-void uvmmap(pagetable_t pgtbl, u64 va, u64 pa, u64 sz, u64 perm) {
-    kvmmap(pgtbl, va, pa, sz, perm | PTE_U);
-}
-
-void uvmunmap(pagetable_t pgtbl, u64 va, u64 sz) {
-    kvmunmap(pgtbl, va, sz);
-}
-
-int uvmcopy(pagetable_t dst, pagetable_t src, u64 sz) {
-    pte_t *pte;
-    u8 *pa;
-
-    for (u64 i = 0; i < sz; i += PAGE_SIZE) {
-        pte = kvmwalk(src, i);
-        if (pte == NULL || *pte == 0) {
-            continue;
-        }
-        pa = alloc_page();
-        memmove((void *)pa, (void *)PTE2PA(*pte), PAGE_SIZE);
-        uvmmap(dst, i, (u64)pa, PAGE_SIZE, PTE_FLAGS(*pte));
-    }
-    return 0;
 }
 
 u64 va2pa(pagetable_t pgtbl, u64 va) {
