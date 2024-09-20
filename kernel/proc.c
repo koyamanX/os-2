@@ -13,6 +13,7 @@
 struct proc procs[NPROCS];
 u8 kstacks[NPROCS][PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
 u8 pgtbls[NPROCS][PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
+u8 trapframe[NPROCS][PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
 struct cpu cpu;
 extern void init(void);
 extern char _procmgr;
@@ -28,6 +29,7 @@ void initproc(void) {
 		procs[i].recv_from = -1;
 		procs[i].kstack = kstacks[i];
 		procs[i].pgtbl = (pagetable_t)pgtbls[i];
+		procs[i].tf = (trapframe_t *)trapframe[i];
     }
 }
 
@@ -64,9 +66,6 @@ static struct proc *_newproc(int pid) {
 found:
     // Initialize proc.
     p->stat = RUNNABLE;
-    // Allocate memory for trapframe, page table, and kernel stack.
-    p->tf = alloc_page();
-    p->pgtbl = alloc_page();
 
     // Initialize trapframe.
     memset(p->tf, 0, sizeof(trapframe_t));
