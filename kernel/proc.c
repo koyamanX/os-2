@@ -11,6 +11,8 @@
 #include <vm.h>
 
 struct proc procs[NPROCS];
+u8 kstacks[NPROCS][PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
+u8 pgtbls[NPROCS][PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
 struct cpu cpu;
 extern void init(void);
 extern char _procmgr;
@@ -26,6 +28,8 @@ void initproc(void) {
     for (int i = 0; i < NPROCS; i++) {
         procs[i].stat = UNUSED;
 		procs[i].recv_from = -1;
+		procs[i].kstack = kstacks[i];
+		procs[i].pgtbl = (pagetable_t)pgtbls[i];
     }
 	list_init(&schedq);
 }
@@ -67,7 +71,6 @@ found:
     // Allocate memory for trapframe, page table, and kernel stack.
     p->tf = alloc_page();
     p->pgtbl = alloc_page();
-    p->kstack = alloc_page();
 
     // Initialize trapframe.
     memset(p->tf, 0, sizeof(trapframe_t));

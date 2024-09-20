@@ -91,7 +91,7 @@ struct proc {
     char name[16];               //!< Name of process.
     pagetable_t pgtbl;           //!< Pagetable of process.
     u64 heap;                    //!< Start address of heap.
-    u8 *kstack;                  //!< Pointer to per-process kernel stack.
+    u8 *kstack;		        	 //!< Pointer to per-process kernel stack.
     void *wchan;                 //!< Waiting channel.
     u64 ppid;                    //!< Parent process.
 	message_t msg;
