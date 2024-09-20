@@ -1,6 +1,7 @@
 #include <printk.h>
-#include <proc.h>
+
 #include <sleeplock.h>
+#include <task.h>
 
 void sleep_lock_init(struct sleeplock *lk, char *name) {
     lk->name = name;

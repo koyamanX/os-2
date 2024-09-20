@@ -1,6 +1,7 @@
 #include <printk.h>
-#include <proc.h>
+
 #include <sched.h>
+#include <task.h>
 
 extern void swtch(context_t *old, context_t *new);
 
@@ -9,9 +10,25 @@ void sched(void) {
 }
 
 void scheduler(void) {
-    struct proc *rp = &procs[0];
-
     while (1) {
+		task_t *task = dequeue();
+		if(!task) {
+			continue;
+		}
+		if(task->stat != RUNNABLE) {
+			continue;
+		}
+		this_proc() = task;
+		task->stat = RUNNING;
+		swtch(&this_cpu().ctx, &task->ctx);
+		this_proc() = NULL;
+		if(task->stat == RUNNING) {
+			task->stat = RUNNABLE;
+			enqueue(task);
+		}
+
+		/*
+		if (task) {
         if (rp >= &procs[NPROCS]) {
             rp = &procs[0];
         }
@@ -28,5 +45,6 @@ void scheduler(void) {
             rp->stat = RUNNABLE;
         }
         rp++;
+		*/
     }
 }

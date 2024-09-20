@@ -1,20 +1,11 @@
-/**
- * @file proc.h
- * @brief Structures and function prototypes for process management.
- * @author ckoyama(koyamanX)
- */
-
-#ifndef _PROC_H
-#define _PROC_H
+#ifndef _TASK_H
+#define _TASK_H
 
 #include <riscv.h>
 #include <ipc.h>
 #include <list.h>
+#include <trap.h>
 
-/**
- * @brief Struct for trapframe.
- * @details It is used for saving context of interrupted process.
- */
 typedef struct {
     u64 ra;
     u64 sp;
@@ -74,11 +65,8 @@ typedef struct {
     u64 s11;
 } context_t;
 
-**
- * @brief Process structure.
- * @details Structure for process.
- */
-struct proc {
+
+typedef struct task {
     u64 stat;                    //!< Execution status of process.
     u64 pid;                     //!< Process IDs.
     trapframe_t *tf;             //!< Trapframe.
@@ -90,9 +78,37 @@ struct proc {
     void *wchan;                 //!< Waiting channel.
     u64 ppid;                    //!< Parent process.
 	message_t msg;
-	endpoint_t recv_from;
+	pid_t recv_from;
+	list_t senderwq;
 	list_t next;
+	struct task *pager;
+	void (*pf_handler)(struct task *task, u64 addr, u64 cause);
+	context_t *pager_ctx;
+} task_t;
+
+#define NTASKS 64
+
+void inittask(void);
+task_t *task_create(char *name, task_t *pager, void (*entry)(void));
+void task_destroy(task_t *task);
+void task_exit(void);
+
+void enqueue(task_t *task);
+task_t *dequeue(void);
+
+struct cpu {
+    task_t *rp;  //!< Running process.
+    context_t ctx;    //!< Context of scheduler.
 };
+extern struct cpu cpu;  //!< Processors kernel can run.
+
+#define this_cpu() (cpu)      //!< This processor's corresponding cpu struct.
+#define this_proc() (cpu.rp)  //!< This process's corresponding proc struct.
+
+#define NPROCS 16          //!< Maximum number of process.
+#define NOFILE 8           //!< Maximum number of open file per process.
+#define USTACK 0x80000000  //!< Initial stack pointer for userland.
+#define NUSTACK 16         //!< Number of user stack in page.
 
 #define UNUSED 0    //!< Proc struct is unused.
 #define USED 1      //!< Proc struct is used.
@@ -102,56 +118,6 @@ struct proc {
 #define SLEEP 5     //!< Proc is sleeping.
 #define RECEIVE 6   //!< Proc is receiving.
 #define SENDING 7   //!< Proc is sending.
-
-/**
- * @brief Struct for Processors.
- * @details It contains running process on a processor and scheduler's context.
- */
-extern struct proc procs[NPROCS];  //!< Processes.
-
-/**
- *	@brief Initialize proc structure.
- *	@details Initialize proc structure.
- */
-void initproc(void);
-/**
- *	@brief Initialize cpu structure.
- *	@details Initialize cpu structure.
- */
-void initcpu(void);
-/**
- * @brief Initialize vritual memory for first user process, init.
- * @return Pointer to pagetable.
- */
-pagetable_t uvminit(void);
-/**
- * @brief Allocate new proc structure and initialize.
- * @details Allocate new proc structure and initialize.
- * @return newly created proc.
- */
-struct task *newproc(void);
-/**
- * @brief Allocate user page for first user-mode process, init
- * @details Allocate user page for first user-mode process, init
- */
-void userinit(void);
-
-/**
- * @brief Execute a file.
- * @details Execute a file, load process image.
- * @param[in] file Pointer to path of file.
- * @param[in] argv Pointer to argument vector.
- * @return 0 on success, -1 on failure.
- */
-int execv(const char *file, char const **argv);
-
-/**
- * @brief Exit process.
- * @details Exit process, free memory, proc struct, etc, and set status as exit
- * status.
- * @param[in] status exit status.
- */
-void _exit(int status);
 
 /**
  * @brief Sleep for wait channel.
@@ -182,4 +148,7 @@ struct task *procmgr(void);
 
 #define PROCMGR 0
 
-#endif  // _PROC_H
+void initcpu(void);
+
+
+#endif // _TASK_H

@@ -2,7 +2,7 @@
 #include <panic.h>
 #include <plic.h>
 #include <printk.h>
-#include <proc.h>
+
 #include <riscv.h>
 #include <sched.h>
 #include <stddef.h>
@@ -10,13 +10,14 @@
 #include <trap.h>
 #include <uart.h>
 #include <vm.h>
+#include <task.h>
 
 void kerneltrap(void) {
     asm volatile("nop");
 }
 
 void usertrapret(void) {
-    struct proc *p;
+    struct task *p;
 
     w_stvec(TRAMPOLINE);
     p = this_proc();
@@ -30,9 +31,9 @@ void usertrapret(void) {
         (u64)SATP(p->pgtbl));
 }
 
-u64 syscall(struct proc *rp);
+u64 syscall(struct task *rp);
 void usertrap(void) {
-    struct proc *rp;
+    struct task *rp;
     rp = this_proc();
     u64 scause = r_scause();
 
@@ -60,6 +61,11 @@ void usertrap(void) {
             uart_intr();
             plic_complete(plic_claim());
             break;
+		case LOAD_PAGE_FAULT:
+		case STORE_AMO_PAGE_FAULT:
+		case INSTRUCTION_PAGE_FAULT: {
+			panic("trap: page fault");
+		}
         default: {
             printk("trap: fault: cause: %x, epc:%x, tval:%x\n",
                          r_scause(), r_sepc(), r_stval());

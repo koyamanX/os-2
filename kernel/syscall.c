@@ -1,6 +1,6 @@
 #include <fcntl.h>
 #include <panic.h>
-#include <proc.h>
+
 #include <sched.h>
 #include <stddef.h>
 #include <sys/stat.h>
@@ -11,8 +11,9 @@
 #include <vm.h>
 #include <ipc.h>
 #include <printk.h>
+#include <task.h>
 
-u64 syscall(struct proc *rp) {
+u64 syscall(struct task *rp) {
     u64 syscall_num = rp->tf->a7;
     u64 a0 = rp->tf->a0;
     u64 a1 = rp->tf->a1;

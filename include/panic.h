@@ -4,6 +4,7 @@
 #define _STR(x) #x
 #define STR(x) _STR(x)
 #define PANIC_IF(cond) if (cond) panic("Panic: " #cond " at " __FILE__ ":" STR(__LINE__))
+#define PANIC_ON(cond, msg) if (cond) panic("Panic: " msg " at " __FILE__ ":" STR(__LINE__))
 
 void panic(char *msg);
 

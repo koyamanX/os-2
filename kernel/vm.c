@@ -3,11 +3,12 @@
 #include <os1.h>
 #include <plic.h>
 #include <printk.h>
-#include <proc.h>
+
 #include <riscv.h>
 #include <sys/types.h>
 #include <uart.h>
 #include <vm.h>
+#include <task.h>
 
 void free_pages(void *p, int order) {
     buddy_free(p, order);

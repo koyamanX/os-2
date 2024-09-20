@@ -8,13 +8,14 @@
 #include <os1.h>
 #include <plic.h>
 #include <printk.h>
-#include <proc.h>
+
 #include <riscv.h>
 #include <sched.h>
 #include <sys/types.h>
 #include <timer.h>
 #include <uart.h>
 #include <vm.h>
+#include <task.h>
 
 /**
  *	@brief Kernel stack per CPU.
@@ -69,8 +70,8 @@ void kmain(void) {
     INFO_PRINTK("enable paging\n");
     // Initialize CPU struct.
     initcpu();
-    // Initialize proc struct.
-    initproc();
+	// Initialize task struct.
+	inittask();
     // Initialize PLIC.
     plic_init();
 	// Initialize process manager.

@@ -1,13 +1,14 @@
 #include <ipc.h>
-#include <proc.h>
+
 #include <riscv.h>
 #include <vm.h>
 #include <printk.h>
+#include <task.h>
 
 int ipc_send(endpoint_t ep, message_t __user *msg) {
 	endpoint_t dest = ep;
 	endpoint_t src = this_proc()->pid;
-	struct proc *dest_p = find_proc(dest);
+	struct task *dest_p = find_proc(dest);
 
 	if (dest < 0 || dest >= NPROCS) {
 		return IPC_INVALID_ENDPOINT;

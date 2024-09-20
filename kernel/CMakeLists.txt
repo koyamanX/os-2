@@ -2,7 +2,6 @@ set(KERNEL_SOURCE
 	main.c
 	panic.c
 	printk.c
-	proc.c
 	sched.c
 	timer.c
 	trap.c
@@ -14,6 +13,7 @@ set(KERNEL_SOURCE
 	alloc.c
 	sleeplock.c
 	plic.c
+	task.c
 	ipc.c
 	trampoline.S
 	timer.S
