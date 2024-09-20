@@ -53,16 +53,6 @@ void kvmmap(pagetable_t pgtbl, u64 va, u64 pa, u64 sz, u64 perm);
 pte_t *kvmwalk(pagetable_t pgtbl, u64 va);
 
 /**
- * @brief Unmap a virtual address.
- * @details This function unmaps a virtual address.
- * @param[in] pgtbl The page table to use.
- * @param[in] va The virtual address to unmap.
- * @param[in] sz The size of the unmapping.
- * @attention THis function free pages.
- */
-void kvmunmap(pagetable_t pgtbl, u64 va, u64 sz);
-
-/**
  * @brief Allocate a page table entry.
  * @details This function allocates a page table entry for the given virtual
  * address.
@@ -84,15 +74,10 @@ void kmeminit(void);
  * @param[in] order The order of the pages.
  * @return The pointer to the allocated pages.
  */
-void *alloc_pages(int order);
+void *alloc_page(void);
 
-/**
- * @brief Free a pages with the given order.
- * @details This function frees a pages with the given order.
- * @param[in] p The pointer to the pages to free.
- * @param[in] order The order of the pages.
- */
-void free_pages(void *p, int order);
+// Delegate all memory from start to end to user space procmgr.
+u64 delegate_memory(pagetable_t pgtbl, u64 end);
 
 /**
  * @brief Convert a virtual address to a physical address.
@@ -103,16 +88,6 @@ void free_pages(void *p, int order);
  * @return The physical address.
  */
 u64 va2pa(pagetable_t pgtbl, u64 va);
-
-/**
- * @brief Allocate a page.
- */
-//#define alloc_page() alloc_pages(MIN_ORDER)
-
-/**
- * @brief Free a page.
- */
-#define free_page(p) free_pages(p, MIN_ORDER)
 
 /**
  * @brief copy len byte from user space to kernel space.

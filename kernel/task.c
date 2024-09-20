@@ -17,15 +17,6 @@ list_t ready_queue;
 struct cpu cpu;
 extern char _procmgr;
 
-static void *alloc_page(void) {
-	static u64 freepage = ((u64)&_end) - PAGE_SIZE;
-
-	freepage = ROUNDUP(freepage) + PAGE_SIZE;
-	PANIC_ON(freepage >= (u64)PHYEND, "Out of memory");
-
-	return (void *)freepage;
-}
-
 void inittask(void) {
 	for (int i = 0; i < NTASKS; i++) {
 		tasks[i].stat = UNUSED;
@@ -146,6 +137,8 @@ static void task_load_embed_elf(task_t *p, const char *elf) {
 			prot |= PTE_W;
 		}
 
+		PANIC_ON((u64)&_end <= phdr[i].p_vaddr && phdr[i].p_vaddr < (u64)PHYEND, "Invalid load address");
+
 		for (u64 va = phdr[i].p_vaddr; va < phdr[i].p_vaddr + phdr[i].p_memsz; va += PAGE_SIZE) {
 			char *page = (char *)va2pa(p->pgtbl, va);
 			if (page == NULL) {
@@ -162,6 +155,7 @@ struct task *procmgr(void) {
 	task_t *task = task_create("procmgr", NULL, NULL);
 
 	task_load_embed_elf(task, &_procmgr);
+	delegate_memory(task->pgtbl, (u64)PHYEND);
 
 	return task;
 }

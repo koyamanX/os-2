@@ -10,17 +10,16 @@
 #include <vm.h>
 #include <task.h>
 
-#define alloc_page() alloc_pages(MIN_ORDER)
-void free_pages(void *p, int order) {
-    buddy_free(p, order);
-}
+static u64 freepage;
+void *alloc_page(void) {
+	freepage = ROUNDUP(freepage) + PAGE_SIZE;
+	PANIC_ON(freepage >= (u64)PHYEND, "Out of memory");
 
-void *alloc_pages(int order) {
-    return buddy_alloc(order);
+	return (void *)freepage;
 }
 
 void kmeminit(void) {
-    buddy_init(&_end, PHYEND);
+	freepage = (u64)&_end - PAGE_SIZE;
 }
 
 pte_t *kvmalloc(pagetable_t pgtbl, u64 va) {
@@ -63,25 +62,6 @@ void kvmmap(pagetable_t pgtbl, u64 va, u64 pa, u64 sz, u64 perm) {
         pte = kvmalloc(pgtbl, i);
 
         *pte = PA2PTE(pa) | perm;
-    }
-}
-
-void kvmunmap(pagetable_t pgtbl, u64 va, u64 sz) {
-    pte_t *pte;
-
-    for (u64 i = ROUNDDOWN(va); i < ROUNDDOWN(va + sz); i += PAGE_SIZE) {
-        pte = kvmwalk(pgtbl, i);
-
-        if (pte == NULL) {
-            continue;
-        }
-        if (*pte == 0) {
-            continue;
-        }
-
-        u64 pa = PTE2PA(*pte);
-        free_page((void *)pa);
-        *pte = 0;
     }
 }
 
@@ -168,4 +148,11 @@ int copyinstr(const void *uaddr, void *kaddr, size_t len, size_t *done) {
     }
 
     return 0;
+}
+
+u64 delegate_memory(pagetable_t pgtbl, u64 end) {
+	for (u64 i = ROUNDDOWN(freepage); i < ROUNDDOWN(end); i += PAGE_SIZE) {
+		kvmmap(pgtbl, i, i, PAGE_SIZE, PTE_V | PTE_W | PTE_R | PTE_U);
+	}
+	return freepage;
 }
