@@ -23,6 +23,7 @@ void inittask(void) {
 		tasks[i].kstack = kstacks[i];
 		tasks[i].pgtbl = (pagetable_t)pgtbls[i];
 		tasks[i].tf = (trapframe_t *)trapframe[i];
+		tasks[i].notification = 0;
 		memset(kstacks[i], 0, PAGE_SIZE);
 		memset(pgtbls[i], 0, PAGE_SIZE);
 		memset(trapframe[i], 0, PAGE_SIZE);

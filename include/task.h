@@ -85,6 +85,7 @@ typedef struct task {
 	struct task *pager;
 	void (*pf_handler)(struct task *task, u64 addr, u64 cause);
 	context_t *pager_ctx;
+	u64 notification;
 } task_t;
 
 #define NTASKS 64
