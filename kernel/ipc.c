@@ -4,46 +4,63 @@
 #include <vm.h>
 #include <printk.h>
 #include <task.h>
+#include <panic.h>
+#include <sched.h>
 
 int ipc_send(endpoint_t ep, message_t __user *msg) {
-	endpoint_t dest = ep;
-	endpoint_t src = this_proc()->pid;
-	struct task *dest_p = find_proc(dest);
+	task_t *sender = this_proc();
+	task_t *receiver = task_lookup(ep);
 
-	if (dest < 0 || dest >= NPROCS) {
+	if(receiver == NULL) {
+		return IPC_INVALID_ENDPOINT;
+	}
+	if(sender->pid == receiver->pid) {
 		return IPC_INVALID_ENDPOINT;
 	}
 
-	if (dest_p->stat == RECEIVE && ((dest_p->recv_from == src) || (dest_p->recv_from == IPC_ANY))) {
-		if (copyin(msg, &dest_p->msg, sizeof(message_t)) < 0) {
-			return IPC_ERROR;
+	if(receiver->stat == SLEEP && (receiver->recv_from == sender->pid || receiver->recv_from == IPC_ANY)) {
+		if(copyin(msg, &receiver->msg, sizeof(message_t)) != 0) {
+			return IPC_INVALID_MESSAGE;
 		}
-		wakeup(&dest_p->msg);
+		task_resume(receiver);
+
+		return IPC_OK;
+	} else if (receiver->stat != SLEEP) {
+		if(copyin(msg, &sender->msg, sizeof(message_t)) != 0) {
+			return IPC_INVALID_MESSAGE;
+		}
+		list_push_back(&receiver->senderwq, &sender->senderwq_next);
+		sender->stat = SENDING;
+		sched();
+
 		return IPC_OK;
 	}
 
-	return IPC_RESEND;
+	return IPC_ERR;
 }
 
 int ipc_recv(endpoint_t ep, message_t __user *msg) {
-	endpoint_t src = ep;
+	task_t *receiver = this_proc();
+	task_t *sender = NULL;
 
-	if (src < 0 || src >= NPROCS) {
-		return IPC_INVALID_ENDPOINT;
+	if(!list_is_empty(&receiver->senderwq)) {
+		sender = LIST_POP_FRONT(&receiver->senderwq, task_t, senderwq_next);
+		if(copyout(&sender->msg, msg, sizeof(message_t)) != 0) {
+			return IPC_INVALID_MESSAGE;
+		}
+		task_resume(sender);
+
+		return IPC_OK;
+	} else {
+		receiver->recv_from = ep;
+
+		task_suspend(receiver);
+
+		if(copyout(&receiver->msg, msg, sizeof(message_t)) != 0) {
+			return IPC_INVALID_MESSAGE;
+		}
+		task_resume(sender);
+		return IPC_OK;
 	}
-
-	this_proc()->stat = RECEIVE;
-	this_proc()->recv_from = src;
-	sleep(&this_proc()->msg);
-
-	if (this_proc()->recv_from != src && this_proc()->recv_from != IPC_ANY) {
-		return IPC_ERROR;
-	}
-
-	this_proc()->recv_from = IPC_INVALID_ENDPOINT;
-	if (copyout(&this_proc()->msg, msg, sizeof(message_t)) < 0) {
-		return IPC_ERROR;
-	}
-
-	return IPC_OK;
+	return IPC_ERR;
 }

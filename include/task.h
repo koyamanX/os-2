@@ -77,9 +77,10 @@ typedef struct task {
     u8 *kstack;		        	 //!< Pointer to per-process kernel stack.
     void *wchan;                 //!< Waiting channel.
     u64 ppid;                    //!< Parent process.
-	message_t msg;
+	message_t msg;				 //!< Message buffer. only valid if status is SENDING.
 	pid_t recv_from;
-	list_t senderwq;
+	list_t senderwq;			 //!< Sender wait queue.
+	list_t senderwq_next;		 //!< Next process in wait queue who wants to send message.
 	list_t next;
 	struct task *pager;
 	void (*pf_handler)(struct task *task, u64 addr, u64 cause);
@@ -116,8 +117,7 @@ extern struct cpu cpu;  //!< Processors kernel can run.
 #define RUNNABLE 3  //!< Proc is runnable.
 #define ZOMBIE 4    //!< Proc is zombie.
 #define SLEEP 5     //!< Proc is sleeping.
-#define RECEIVE 6   //!< Proc is receiving.
-#define SENDING 7   //!< Proc is sending.
+#define SENDING 6   //!< Proc is sending message.
 
 /**
  * @brief Sleep for wait channel.
@@ -149,6 +149,12 @@ struct task *procmgr(void);
 #define PROCMGR 0
 
 void initcpu(void);
+
+void task_suspend(task_t *task);
+void task_resume(task_t *task);
+struct task *task_lookup(u64 pid);
+
+void enqueue_task(task_t *task);
 
 
 #endif // _TASK_H

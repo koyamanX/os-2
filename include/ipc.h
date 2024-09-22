@@ -12,8 +12,9 @@ typedef struct message {
 
 typedef u64 endpoint_t;
 
+#define IPC_INVALID_MESSAGE -3
 #define IPC_INVALID_ENDPOINT -2
-#define IPC_ERROR -1
+#define IPC_ERR -1
 #define IPC_OK 0
 #define IPC_RESEND 1
 

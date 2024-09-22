@@ -106,6 +106,17 @@ task_t *dequeue(void) {
 	return LIST_POP_FRONT(&ready_queue, task_t, next);
 }
 
+void task_suspend(task_t *task) {
+	task->stat = SLEEP;
+	sched();
+}
+
+void task_resume(task_t *task) {
+	task->stat = RUNNABLE;
+	enqueue(task);
+	sched();
+}
+
 void initcpu(void) {
     cpu.rp = NULL;
     memset(&cpu.ctx, 0, sizeof(context_t));
@@ -164,8 +175,7 @@ void sleep(void *wchan) {
     struct task *rp = this_proc();
 
     rp->wchan = wchan;
-	if(rp->stat == RUNNABLE)
-		rp->stat = SLEEP;
+    rp->stat = SLEEP;
 
     sched();
 
@@ -173,8 +183,19 @@ void sleep(void *wchan) {
 }
 
 void wakeup(void *wchan) {
+    for (struct task *rp = &tasks[0]; rp < &tasks[NTASKS]; rp++) {
+        if (rp->wchan == wchan && rp->stat == SLEEP) {
+            rp->stat = RUNNABLE;
+            rp->wchan = NULL;
+        }
+    }
 }
 
-struct task *find_proc(u64 pid) {
+struct task *task_lookup(u64 pid) {
+	for (struct task *rp = &tasks[0]; rp < &tasks[NTASKS]; rp++) {
+		if (rp->pid == pid) {
+			return rp;
+		}
+	}
 	return NULL;
 }
