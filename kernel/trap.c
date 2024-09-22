@@ -11,6 +11,7 @@
 #include <uart.h>
 #include <vm.h>
 #include <task.h>
+#include <lib.h>
 
 void kerneltrap(void) {
     asm volatile("nop");
@@ -51,6 +52,7 @@ void usertrap(void) {
             syscall(rp);
             if (rp->stat == RUNNING) {
                 rp->stat = RUNNABLE;
+				enqueue(rp);
             }
             sched();
             break;
@@ -64,7 +66,20 @@ void usertrap(void) {
 		case LOAD_PAGE_FAULT:
 		case STORE_AMO_PAGE_FAULT:
 		case INSTRUCTION_PAGE_FAULT: {
-			panic("trap: page fault");
+			task_t *task = this_proc();
+			
+			message_t msg;
+			msg.mtype = IPC_PAGE_FAULT;
+			msg.page_fault.addr = r_stval();
+			msg.page_fault.type = scause;
+			msg.page_fault.task = task->pid;
+
+			memmove(&task->pager->notification_msg, &msg, sizeof(message_t));
+			task->pager->notification = KERNEL_NOTIFICATION;
+			PANIC_ON(task->pager == NULL, "Pager is NULL\n");
+			task_resume(task->pager);
+
+			break;
 		}
         default: {
             printk("trap: fault: cause: %x, epc:%x, tval:%x\n",

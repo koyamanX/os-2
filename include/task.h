@@ -86,12 +86,13 @@ typedef struct task {
 	void (*pf_handler)(struct task *task, u64 addr, u64 cause);
 	context_t *pager_ctx;
 	u64 notification;
+	message_t notification_msg;
 } task_t;
 
 #define NTASKS 64
 
 void inittask(void);
-task_t *task_create(char *name, task_t *pager, void (*entry)(void));
+int task_create(char *name, u64 pager, u64 *entry);
 void task_destroy(task_t *task);
 void task_exit(void);
 

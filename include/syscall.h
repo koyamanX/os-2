@@ -21,4 +21,6 @@
 #define __NR_IPC_SEND 17
 #define __NR_IPC_RECV 18
 
+#define TASK_CREATE 0xffff0000
+
 #endif

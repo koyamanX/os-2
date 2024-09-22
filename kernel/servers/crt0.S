@@ -24,18 +24,6 @@ write:
 	ecall
 	ret
 
-.globl open
-open:
-	li a7, 2
-	ecall
-	ret
-
-.globl mknod
-mknod:
-	li a7, 4
-	ecall
-	ret
-
 .globl ipc_send
 ipc_send:
 	li a7, 17
@@ -48,15 +36,8 @@ ipc_recv:
 	ecall
 	ret
 
-.globl fork
-fork:
-	li a7, 7
+.globl task_create
+task_create:
+	li a7, 0xffff0000
 	ecall
 	ret
-
-.globl execve
-execve:
-	li a7, 1
-	ecall
-	ret
-

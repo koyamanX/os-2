@@ -8,6 +8,23 @@
 #include <sched.h>
 #include <lib.h>
 
+int ipc_notification(endpoint_t ep, message_t __user *msg) {
+	task_t *receiver = task_lookup(ep);
+
+	if(receiver == NULL) {
+		return IPC_INVALID_ENDPOINT;
+	}
+
+	if(copyin(msg, &receiver->notification_msg, sizeof(message_t)) != 0) {
+		return IPC_INVALID_MESSAGE;
+	}
+
+	receiver->notification = KERNEL_NOTIFICATION;
+	task_resume(receiver);
+
+	return IPC_OK;
+}
+
 int ipc_send(endpoint_t ep, message_t __user *msg) {
 	task_t *sender = this_proc();
 	task_t *receiver = task_lookup(ep);
@@ -45,16 +62,23 @@ int ipc_recv(endpoint_t ep, message_t __user *msg) {
 	task_t *sender = NULL;
 
 	if(receiver->recv_from == IPC_ANY && receiver->notification) {
-		message_t notification;
+		if(receiver->notification & KERNEL_NOTIFICATION) {
+			receiver->notification &= ~KERNEL_NOTIFICATION;
+			if(copyout(&receiver->notification_msg, msg, sizeof(message_t)) != 0) {
+				return IPC_INVALID_MESSAGE;
+			}
+			return IPC_OK;
+		} else {
+			message_t notification;
 
-		notification.msrc = IPC_KERNEL;
-		notification.mtype = IPC_NOTIFY;
-		memcpy(&notification.mdata[0], &receiver->notification, sizeof(u64));
-		if(copyout(&notification, msg, sizeof(message_t)) != 0) {
-			return IPC_INVALID_MESSAGE;
+			notification.msrc = IPC_KERNEL;
+			notification.mtype = IPC_NOTIFY;
+			memcpy(&notification.mdata[0], &receiver->notification, sizeof(u64));
+			if(copyout(&notification, msg, sizeof(message_t)) != 0) {
+				return IPC_INVALID_MESSAGE;
+			}
+			receiver->notification = 0;
 		}
-		receiver->notification = 0;
-
 		return IPC_OK;
 	}
 
@@ -63,6 +87,8 @@ int ipc_recv(endpoint_t ep, message_t __user *msg) {
 		if(copyout(&sender->msg, msg, sizeof(message_t)) != 0) {
 			return IPC_INVALID_MESSAGE;
 		}
+		task_resume(receiver);
+		// TODO:???
 		task_resume(sender);
 
 		return IPC_OK;

@@ -31,30 +31,31 @@ void inittask(void) {
 	list_init(&ready_queue);
 }
 
-task_t *task_create(char *name, task_t *pager, void (*entry)(void)) {
+int task_create(char *name, u64 pager, u64 *entry) {
 	task_t *task = NULL;
 	static int pid = 0;
 
+	task_t *pager_task = task_lookup(pager);
+	if(pager_task == NULL && (pid != 0)) {
+		PANIC_ON(1, "pager not found");
+		return -1;
+	}
+
 	for (int i = 0; i < NTASKS; i++) {
 		if (tasks[i].stat == UNUSED) {
-			pid++;
 			task = &tasks[i];
 			break;
 		}
 	}
 
 	if(task == NULL) {
-		return NULL;
-	}
-
-	if(pager == NULL) {
-		PANIC_ON(task->stat != UNUSED, "No available pager");
-		pager = &tasks[0];
+		return -1;
 	}
 
 	task->stat = RUNNABLE;
 	task->pid = pid;
-	task->pager = pager;
+	pid++;
+	task->pager = pager_task;
 	//task->ppid = ?;
 	strcpy(task->name, name);
 
@@ -88,7 +89,7 @@ task_t *task_create(char *name, task_t *pager, void (*entry)(void)) {
 
 	printk("task_create: %s(%x) created\n", name, pid);
 
-	return task;
+	return 0;
 }
 
 void task_destroy(task_t *task) {
@@ -114,7 +115,7 @@ void task_suspend(task_t *task) {
 
 void task_resume(task_t *task) {
 	task->stat = RUNNABLE;
-	enqueue(task);
+	//enqueue(task);
 	sched();
 }
 
@@ -164,7 +165,8 @@ static void task_load_embed_elf(task_t *p, const char *elf) {
 }
 
 struct task *procmgr(void) {
-	task_t *task = task_create("procmgr", NULL, NULL);
+	task_create("procmgr", 0, NULL);
+	task_t *task = &tasks[0];
 
 	task_load_embed_elf(task, &_procmgr);
 	delegate_memory(task->pgtbl, (u64)PHYEND);

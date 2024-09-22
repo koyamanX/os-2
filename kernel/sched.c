@@ -24,7 +24,7 @@ void scheduler(void) {
 		this_proc() = NULL;
 		if(task->stat == RUNNING) {
 			task->stat = RUNNABLE;
+			enqueue(task);
 		}
-		enqueue(task);
     }
 }

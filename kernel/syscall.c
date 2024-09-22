@@ -33,6 +33,10 @@ u64 syscall(struct task *rp) {
 			ret = ipc_recv((endpoint_t)a0, (message_t*)a1);
 			rp->tf->a0 = ret;
 			break;
+		case TASK_CREATE:
+			ret = task_create((char *)va2pa(rp->pgtbl, a0), (u64)a1, (u64 *)a2);
+			rp->tf->a0 = ret;
+			break;
         default:
             panic("invalid syscall\n");
             break;
